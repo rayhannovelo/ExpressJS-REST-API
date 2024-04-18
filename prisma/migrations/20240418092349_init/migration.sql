@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE `UserRoles` (
+CREATE TABLE `user_roles` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_role_name` VARCHAR(191) NOT NULL,
     `user_role_description` TEXT NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE `UserRoles` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `UserStatuses` (
+CREATE TABLE `user_statuses` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_status_name` VARCHAR(191) NOT NULL,
     `user_status_description` TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE `UserStatuses` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Users` (
+CREATE TABLE `users` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_role_id` INTEGER UNSIGNED NOT NULL,
     `user_status_id` INTEGER UNSIGNED NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE `Users` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Posts` (
+CREATE TABLE `posts` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER UNSIGNED NOT NULL,
     `title` VARCHAR(191) NOT NULL,
@@ -50,10 +50,10 @@ CREATE TABLE `Posts` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Users` ADD CONSTRAINT `Users_user_role_id_fkey` FOREIGN KEY (`user_role_id`) REFERENCES `UserRoles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `users` ADD CONSTRAINT `users_user_role_id_fkey` FOREIGN KEY (`user_role_id`) REFERENCES `user_roles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Users` ADD CONSTRAINT `Users_user_status_id_fkey` FOREIGN KEY (`user_status_id`) REFERENCES `UserStatuses`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `users` ADD CONSTRAINT `users_user_status_id_fkey` FOREIGN KEY (`user_status_id`) REFERENCES `user_statuses`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Posts` ADD CONSTRAINT `Posts_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `posts` ADD CONSTRAINT `posts_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
