@@ -3,8 +3,11 @@ const router = express.Router()
 const z = require('zod')
 const bcrypt = require('bcrypt')
 const { PrismaClient } = require('@prisma/client')
+const { authGuard } = require('../middleware/authMiddleware')
 
 const prisma = new PrismaClient()
+
+router.use(authGuard)
 
 // get users
 router.get('/', async (req, res) => {

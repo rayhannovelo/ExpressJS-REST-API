@@ -16,4 +16,11 @@ function camelToSnake(obj) {
   return snakeCaseObject
 }
 
-module.exports = { camelToSnake }
+// Exclude keys from user
+function exclude(user, keys) {
+  return Object.fromEntries(
+    Object.entries(user).filter(([key]) => !keys.includes(key))
+  )
+}
+
+module.exports = { camelToSnake, exclude }
