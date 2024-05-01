@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { PrismaClient } = require('@prisma/client')
 const { exclude } = require('../helpers/index')
+const { authGuard } = require('../middleware/authMiddleware')
 
 const prisma = new PrismaClient()
 
@@ -83,5 +84,62 @@ router.post(
     }
   }
 )
+
+// auth user only
+router.use(authGuard)
+
+router.get('/user', async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: parseInt(req.authUser.id)
+      }
+    })
+
+    res.json({
+      success: true,
+      message: 'Get user successfully',
+      data: user
+    })
+  } catch (err) {
+    err.message =
+      err.code == 'P2025' ? 'Data row not found' : 'Failed to get user'
+    next(err)
+  }
+})
+
+router.get('/refresh-token', async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: parseInt(req.authUser.id)
+      }
+    })
+
+    const days = 30 // days
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: `${days} days`
+    })
+
+    res.json({
+      success: true,
+      message: 'Refresh token successfully',
+      data: {
+        user,
+        user_token: {
+          type: 'bearer',
+          token,
+          expiresAt: new Date(
+            new Date().getTime() + days * 24 * 60 * 60 * 1000
+          ).toISOString()
+        }
+      }
+    })
+  } catch (err) {
+    err.message =
+      err.code == 'P2025' ? 'Data row not found' : 'Failed to get user'
+    next(err)
+  }
+})
 
 module.exports = router

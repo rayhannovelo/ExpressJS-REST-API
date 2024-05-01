@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 const path = require('path')
+const cookieParser = require('cookie-parser')
 const methodOverride = require('method-override')
 const helmet = require('helmet')
 const { notFound, errorHandler } = require('./middleware/errorMiddleware')
@@ -14,6 +15,9 @@ app.disable('x-powered-by')
 // allow json & form data
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// allow cookie
+app.use(cookieParser())
 
 // allow PUT and DELETE method
 app.use(methodOverride())

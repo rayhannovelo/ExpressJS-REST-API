@@ -21,10 +21,16 @@ const authGuard = async (req, res, next) => {
 
       next()
     } catch (err) {
-      res.status(401)
-      err.message = 'Unauthorized access'
-      next(err)
+      res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
+      })
     }
+  } else {
+    res.status(401).json({
+      success: false,
+      message: 'Token not found'
+    })
   }
 }
 

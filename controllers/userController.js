@@ -7,6 +7,7 @@ const { authGuard } = require('../middleware/authMiddleware')
 
 const prisma = new PrismaClient()
 
+// auth user only
 router.use(authGuard)
 
 // get users
