@@ -4,6 +4,7 @@ const z = require('zod')
 const bcrypt = require('bcrypt')
 const { PrismaClient } = require('@prisma/client')
 const { authGuard } = require('../middleware/authMiddleware')
+const { exclude, excludeMany } = require('../helpers/index')
 
 const prisma = new PrismaClient()
 
@@ -12,7 +13,8 @@ router.use(authGuard)
 
 // get users
 router.get('/', async (req, res) => {
-  const users = await prisma.user.findMany()
+  const usersGet = await prisma.user.findMany()
+  const users = excludeMany(usersGet, ['password'])
 
   res.json({
     success: true,
@@ -24,11 +26,12 @@ router.get('/', async (req, res) => {
 // get user
 router.get('/:id', async (req, res, next) => {
   try {
-    const user = await prisma.user.findUniqueOrThrow({
+    const userGet = await prisma.user.findUniqueOrThrow({
       where: {
         id: parseInt(req.params.id)
       }
     })
+    const user = exclude(userGet, ['password'])
 
     res.json({
       success: true,
@@ -60,7 +63,7 @@ router.post(
         email: z.string().email()
       })
       .superRefine(async (val, ctx) => {
-        // check if passowrd match
+        // check if password match
         if (val.password !== val.passwordConfirmation) {
           ctx.addIssue({
             code: 'custom',
@@ -108,21 +111,18 @@ router.post(
       })
     }
 
-    return next()
+    delete result.data.passwordConfirmation
+    req.data = result.data
+    next()
   },
   async (req, res, next) => {
     try {
       await prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            userRoleId: req.body.userRoleId,
-            userStatusId: req.body.userStatusId,
-            username: req.body.username,
-            password: await bcrypt.hash(req.body.password, 10),
-            name: req.body.name,
-            email: req.body.email
-          }
+        req.data.password = await bcrypt.hash(req.data.password, 10)
+        const userStore = await tx.user.create({
+          data: req.data
         })
+        const user = exclude(userStore, ['password'])
 
         res.json({
           success: true,
@@ -151,14 +151,14 @@ router.put(
         userRoleId: z.number(),
         userStatusId: z.number(),
         username: z.string(),
-        password: z.string(),
-        passwordConfirmation: z.string(),
+        password: z.string().optional(),
+        passwordConfirmation: z.string().optional(),
         name: z.string(),
         email: z.string().email()
       })
       .superRefine(async (val, ctx) => {
-        // check if passowrd match
-        if (val.password !== val.passwordConfirmation) {
+        // check if password match
+        if (val.password && val.password !== val.passwordConfirmation) {
           ctx.addIssue({
             code: 'custom',
             path: ['password'],
@@ -219,24 +219,25 @@ router.put(
       })
     }
 
-    return next()
+    delete result.data.id
+    delete result.data.passwordConfirmation
+    req.data = result.data
+    next()
   },
   async (req, res, next) => {
     try {
+      if (req.data.password) {
+        req.data.password = await bcrypt.hash(req.data.password, 10)
+      }
+
       await prisma.$transaction(async (tx) => {
-        const user = await tx.user.update({
+        const userUpdate = await tx.user.update({
           where: {
             id: req.body.id
           },
-          data: {
-            userRoleId: req.body.userRoleId,
-            userStatusId: req.body.userStatusId,
-            username: req.body.username,
-            password: await bcrypt.hash(req.body.password, 10),
-            name: req.body.name,
-            email: req.body.email
-          }
+          data: req.data
         })
+        const user = exclude(userUpdate, ['password'])
 
         res.json({
           success: true,
