@@ -16,11 +16,24 @@ function camelToSnake(obj) {
   return snakeCaseObject
 }
 
-// Exclude keys from user
-function exclude(user, keys) {
+// exclude keys prisma
+function exclude(data, keys) {
   return Object.fromEntries(
-    Object.entries(user).filter(([key]) => !keys.includes(key))
+    Object.entries(data).filter(([key]) => !keys.includes(key))
   )
 }
 
-module.exports = { camelToSnake, exclude }
+function excludeMany(data, keys) {
+  const obj = []
+  Object.entries(data).forEach((value) => {
+    obj.push(
+      Object.fromEntries(
+        Object.entries(value[1]).filter(([key]) => !keys.includes(key))
+      )
+    )
+  })
+
+  return obj
+}
+
+module.exports = { camelToSnake, exclude, excludeMany }
