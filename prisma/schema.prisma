@@ -10,7 +10,7 @@ generator client {
 model UserRole {
   id                  Int       @id @default(autoincrement()) @db.UnsignedInt
   userRoleName        String    @map("user_role_name")
-  userRoleDescription String    @map("user_role_description") @db.Text
+  userRoleDescription String?   @map("user_role_description") @db.Text
   createdAt           DateTime? @default(now()) @map("created_at")
   updatedAt           DateTime? @default(now()) @updatedAt @map("updated_at")
   user                User[]
@@ -21,7 +21,7 @@ model UserRole {
 model UserStatus {
   id                    Int       @id @default(autoincrement()) @db.UnsignedInt
   userStatusName        String    @map("user_status_name")
-  userStatusDescription String    @map("user_status_description") @db.Text
+  userStatusDescription String?   @map("user_status_description") @db.Text
   createdAt             DateTime? @default(now()) @map("created_at")
   updatedAt             DateTime? @default(now()) @updatedAt @map("updated_at")
   user                  User[]

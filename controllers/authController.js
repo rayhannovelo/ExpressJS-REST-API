@@ -80,7 +80,6 @@ router.post(
         }
       })
     } catch (err) {
-      err.message = 'Invalid credentials'
       next(err)
     }
   }
@@ -104,8 +103,6 @@ router.get('/user', async (req, res, next) => {
       data: user
     })
   } catch (err) {
-    err.message =
-      err.code == 'P2025' ? 'Data row not found' : 'Failed to get user'
     next(err)
   }
 })
@@ -202,7 +199,6 @@ router.put(
         })
       })
     } catch (err) {
-      err.message = 'Failed to update user'
       next(err)
     }
   }
@@ -236,8 +232,6 @@ router.get('/refresh-token', async (req, res, next) => {
       }
     })
   } catch (err) {
-    err.message =
-      err.code == 'P2025' ? 'Data row not found' : 'Failed to get user'
     next(err)
   }
 })

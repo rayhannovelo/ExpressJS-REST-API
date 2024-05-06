@@ -39,8 +39,6 @@ router.get('/:id', async (req, res, next) => {
       data: user
     })
   } catch (err) {
-    err.message =
-      err.code == 'P2025' ? 'Data row not found' : 'Failed to get user'
     next(err)
   }
 })
@@ -131,7 +129,6 @@ router.post(
         })
       })
     } catch (err) {
-      err.message = 'Failed to create user'
       next(err)
     }
   }
@@ -246,7 +243,6 @@ router.put(
         })
       })
     } catch (err) {
-      err.message = 'Failed to update user'
       next(err)
     }
   }
@@ -266,8 +262,6 @@ router.delete('/:id', async (req, res, next) => {
       message: 'Delete user successfully'
     })
   } catch (err) {
-    err.message =
-      err.code == 'P2025' ? 'Data row not found' : 'Failed to delete user'
     next(err)
   }
 })

@@ -38,10 +38,12 @@ app.get('/api', (req, res) => {
 })
 
 // controller routes
-const userController = require('./controllers/userController')
 const authController = require('./controllers/authController')
-app.use('/api/users', userController)
+const userController = require('./controllers/userController')
+const userRoleController = require('./controllers/userRoleController')
 app.use('/api/auth', authController)
+app.use('/api/users', userController)
+app.use('/api/user-roles', userRoleController)
 
 // handling error
 app.use(notFound)

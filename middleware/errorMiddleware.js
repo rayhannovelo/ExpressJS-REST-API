@@ -7,8 +7,17 @@ const notFound = (req, res, next) => {
 }
 
 const errorHandler = (err, req, res, next) => {
-  console.log(err)
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode
+
+  if (err.code == 'P2003') {
+    err.message = 'Data that has been used cannot be deleted!'
+  } else if (err.code == 'P2025') {
+    err.message = 'Data row not found!'
+  } else if (err.code) {
+    err.message = 'Failed to process!'
+  } else {
+    err.message = 'Error!'
+  }
 
   const data = {
     success: false,
