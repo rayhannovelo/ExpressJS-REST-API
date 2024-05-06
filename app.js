@@ -41,9 +41,11 @@ app.get('/api', (req, res) => {
 const authController = require('./controllers/authController')
 const userController = require('./controllers/userController')
 const userRoleController = require('./controllers/userRoleController')
+const userStatusController = require('./controllers/userStatusController')
 app.use('/api/auth', authController)
 app.use('/api/users', userController)
 app.use('/api/user-roles', userRoleController)
+app.use('/api/user-statuses', userStatusController)
 
 // handling error
 app.use(notFound)
