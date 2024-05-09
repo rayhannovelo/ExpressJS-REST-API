@@ -13,7 +13,11 @@ router.use(authGuard)
 
 // get users
 router.get('/', async (req, res) => {
-  const usersGet = await prisma.user.findMany()
+  const usersGet = await prisma.user.findMany({
+    include: {
+      posts: true
+    }
+  })
   const users = excludeMany(usersGet, ['password'])
 
   res.json({
@@ -29,6 +33,9 @@ router.get('/:id', async (req, res, next) => {
     const userGet = await prisma.user.findUniqueOrThrow({
       where: {
         id: parseInt(req.params.id)
+      },
+      include: {
+        posts: true
       }
     })
     const user = exclude(userGet, ['password'])

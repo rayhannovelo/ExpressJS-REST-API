@@ -13,7 +13,16 @@ router.use(authGuard)
 
 // get posts
 router.get('/', async (req, res) => {
-  const posts = await prisma.post.findMany()
+  const posts = await prisma.post.findMany({
+    include: {
+      user: {
+        include: {
+          userRole: true,
+          userStatus: true
+        }
+      }
+    }
+  })
 
   res.json({
     success: true,
