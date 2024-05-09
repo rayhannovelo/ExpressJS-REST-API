@@ -8,24 +8,24 @@ const { exclude, excludeMany } = require('../helpers/index')
 
 const prisma = new PrismaClient()
 
-// auth user role only
+// auth post only
 router.use(authGuard)
 
-// get user roles
+// get posts
 router.get('/', async (req, res) => {
-  const userRoles = await prisma.userRole.findMany()
+  const posts = await prisma.post.findMany()
 
   res.json({
     success: true,
-    message: 'Get user roles successfully',
-    data: userRoles
+    message: 'Get posts successfully',
+    data: posts
   })
 })
 
-// get user role
+// get post
 router.get('/:id', async (req, res, next) => {
   try {
-    const userRole = await prisma.userRole.findUniqueOrThrow({
+    const post = await prisma.post.findUniqueOrThrow({
       where: {
         id: parseInt(req.params.id)
       }
@@ -33,22 +33,22 @@ router.get('/:id', async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Get user role successfully',
-      data: userRole
+      message: 'Get post successfully',
+      data: post
     })
   } catch (err) {
     next(err)
   }
 })
 
-// store user role
+// store post
 router.post(
   '/',
   async (req, res, next) => {
     const result = await z
       .object({
-        userRoleName: z.string(),
-        userRoleDescription: z.string().optional()
+        title: z.string(),
+        body: z.string()
       })
       .safeParseAsync(req.body)
 
@@ -66,13 +66,15 @@ router.post(
   async (req, res, next) => {
     try {
       await prisma.$transaction(async (tx) => {
-        const userRole = await tx.userRole.create({
+        req.data.userId = req.authUser.id
+        const post = await tx.post.create({
           data: req.data
         })
+
         res.json({
           success: true,
-          message: 'User role created successfully',
-          data: userRole
+          message: 'Post created successfully',
+          data: post
         })
       })
     } catch (err) {
@@ -81,7 +83,7 @@ router.post(
   }
 )
 
-// update user role
+// update post
 router.put(
   '/:id',
   async (req, res, next) => {
@@ -90,12 +92,12 @@ router.put(
     const result = await z
       .object({
         id: z.number(),
-        userRoleName: z.string(),
-        userRoleDescription: z.string().optional()
+        title: z.string(),
+        body: z.string()
       })
       .superRefine(async (val, ctx) => {
         // check id
-        const id = await prisma.userRole.findUnique({
+        const id = await prisma.post.findUnique({
           where: {
             id: val.id
           }
@@ -125,7 +127,7 @@ router.put(
   async (req, res, next) => {
     try {
       await prisma.$transaction(async (tx) => {
-        const userRole = await tx.userRole.update({
+        const post = await tx.post.update({
           where: {
             id: req.body.id
           },
@@ -134,8 +136,8 @@ router.put(
 
         res.json({
           success: true,
-          message: 'User role updated successfully',
-          data: userRole
+          message: 'Post updated successfully',
+          data: post
         })
       })
     } catch (err) {
@@ -144,10 +146,10 @@ router.put(
   }
 )
 
-// delete user role
+// delete post
 router.delete('/:id', async (req, res, next) => {
   try {
-    const userRole = await prisma.userRole.delete({
+    const post = await prisma.post.delete({
       where: {
         id: parseInt(req.params.id)
       }
@@ -155,7 +157,7 @@ router.delete('/:id', async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Delete user role successfully'
+      message: 'Delete post successfully'
     })
   } catch (err) {
     next(err)

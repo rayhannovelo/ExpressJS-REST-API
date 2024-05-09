@@ -94,7 +94,7 @@ router.put(
         userStatusDescription: z.string().optional()
       })
       .superRefine(async (val, ctx) => {
-        // check user id
+        // check id
         const id = await prisma.userStatus.findUnique({
           where: {
             id: val.id

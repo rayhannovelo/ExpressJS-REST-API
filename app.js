@@ -42,10 +42,12 @@ const authController = require('./controllers/authController')
 const userController = require('./controllers/userController')
 const userRoleController = require('./controllers/userRoleController')
 const userStatusController = require('./controllers/userStatusController')
+const postController = require('./controllers/postController')
 app.use('/api/auth', authController)
 app.use('/api/users', userController)
 app.use('/api/user-roles', userRoleController)
 app.use('/api/user-statuses', userStatusController)
+app.use('/api/posts', postController)
 
 // handling error
 app.use(notFound)

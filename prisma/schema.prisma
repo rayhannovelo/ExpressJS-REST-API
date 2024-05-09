@@ -43,12 +43,12 @@ model User {
   emailVerifiedAt DateTime?  @map("email_verified_at")
   createdAt       DateTime?  @default(now()) @map("created_at")
   updatedAt       DateTime?  @default(now()) @updatedAt @map("updated_at")
-  posts           Posts[]
+  posts           Post[]
 
   @@map("users")
 }
 
-model Posts {
+model Post {
   id        Int       @id @default(autoincrement()) @db.UnsignedInt
   userId    Int       @map("user_id") @db.UnsignedInt
   user      User      @relation(fields: [userId], references: [id])
