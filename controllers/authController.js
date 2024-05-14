@@ -2,12 +2,43 @@ const express = require('express')
 const router = express.Router()
 const z = require('zod')
 const bcrypt = require('bcrypt')
+const multer = require('multer')
+const fs = require('node:fs')
 const jwt = require('jsonwebtoken')
 const { PrismaClient } = require('@prisma/client')
 const { authGuard } = require('../middleware/authMiddleware')
 const { exclude } = require('../helpers/index')
 
 const prisma = new PrismaClient()
+
+// multer config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/user-photo')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+})
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 2 // 2mb
+  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == 'image/png' ||
+      file.mimetype == 'image/jpg' ||
+      file.mimetype == 'image/jpeg'
+    ) {
+      cb(null, true)
+    } else {
+      const err = new Error('Invalid mime type')
+      err.code = 'INVALID_MIME_TYPE'
+      return cb(err)
+    }
+  }
+})
 
 // login
 router.post(
@@ -110,9 +141,11 @@ router.get('/user', async (req, res, next) => {
 // update user
 router.put(
   '/user',
+  upload.single('photo'),
   async (req, res, next) => {
     req.body.userRoleId = parseInt(req.body.userRoleId)
     req.body.userStatusId = parseInt(req.body.userStatusId)
+    req.body.photo = req.file ? req.file.filename : null
 
     const result = await z
       .object({
@@ -122,6 +155,7 @@ router.put(
         password: z.string().optional(),
         passwordConfirmation: z.string().optional(),
         name: z.string(),
+        photo: z.string().nullable().optional(),
         email: z.string().email()
       })
       .superRefine(async (val, ctx) => {
@@ -132,6 +166,40 @@ router.put(
             path: ['password'],
             message:
               'The password field and passwordConfirmation field must be the same'
+          })
+        }
+
+        // check username
+        const username = await prisma.user.findFirst({
+          where: {
+            username: {
+              equals: val.username,
+              not: req.authUser.username
+            }
+          }
+        })
+        if (username) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['username'],
+            message: 'The username is not unique'
+          })
+        }
+
+        // check email
+        const email = await prisma.user.findFirst({
+          where: {
+            email: {
+              equals: val.email,
+              not: req.authUser.email
+            }
+          }
+        })
+        if (email) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['email'],
+            message: 'The email is not unique'
           })
         }
 
@@ -166,6 +234,15 @@ router.put(
       .safeParseAsync(req.body)
 
     if (!result.success) {
+      // remove file
+      if (fs.existsSync(req.file.path)) {
+        try {
+          fs.unlinkSync(req.file.path)
+        } catch (err) {
+          return next(err)
+        }
+      }
+
       return res.status(422).json({
         success: false,
         message: 'Validation Error',
@@ -184,6 +261,19 @@ router.put(
       }
 
       await prisma.$transaction(async (tx) => {
+        // remove old photo
+        if (
+          req.data.photo &&
+          fs.existsSync(`uploads\\user-photo\\${req.authUser.photo}`)
+        ) {
+          try {
+            fs.unlinkSync(`uploads\\user-photo\\${req.authUser.photo}`)
+          } catch (err) {
+            return next(err)
+          }
+        }
+        if (!req.data.photo) delete req.data.photo
+
         const userUpdate = await tx.user.update({
           where: {
             id: req.authUser.id

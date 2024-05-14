@@ -359,13 +359,17 @@ router.put(
         })
 
         // remove old photo
-        if (fs.existsSync(`uploads\\user-photo\\${userGet.photo}`)) {
+        if (
+          req.data.photo &&
+          fs.existsSync(`uploads\\user-photo\\${userGet.photo}`)
+        ) {
           try {
             fs.unlinkSync(`uploads\\user-photo\\${userGet.photo}`)
           } catch (err) {
             return next(err)
           }
         }
+        if (!req.data.photo) delete req.data.photo
 
         const userUpdate = await tx.user.update({
           where: {
